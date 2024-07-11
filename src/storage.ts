@@ -1,4 +1,4 @@
-export function savePointsFilterAction(pointsFilterClick:number) {
+export function savePointsFilterAction(pointsFilterClick: number) {
   localStorage.removeItem("pointsFilterClicks");
   const date = new Date();
   localStorage.setItem(
@@ -7,7 +7,7 @@ export function savePointsFilterAction(pointsFilterClick:number) {
   );
 }
 
-export function saveCommsFilterAction(commFilterClick:number) {
+export function saveCommsFilterAction(commFilterClick: number) {
   localStorage.removeItem("commsFilterClicks");
   const date = new Date();
   localStorage.setItem(

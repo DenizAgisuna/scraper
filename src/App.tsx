@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import "./App.css";
-import { LoadArticles } from "./loadArticle.application";
-import cleanHTMLString from "./adaptHtmlString.adapter";
-import adaptArticleToObject from "./articleAdapter.adapter";
-import ArticleComponent from "./articleComponent";
-import { Article } from "./Article";
+import cleanHTMLString from "./contexts/article/adapter/adaptHtmlString.adapter";
+import ArticleComponent from "./components/articleComponent";
+import { Article } from "./contexts/article/domain/Article";
 import { savePointsFilterAction, saveCommsFilterAction } from "./storage";
+import { LoadArticles } from "./contexts/article/infrastructure/loadArticle.application";
+import adaptArticleToObject from "./contexts/article/adapter/articleAdapter.adapter";
 
 function App() {
   const [commFilterClick, setCommFilterClicks] = useState<number>(0);
   const [pointsFilterClick, setPointsFilterClick] = useState<number>(0);
-
   const [titles, setTitles] = useState<string[]>();
   const [articles, setArticles] = useState<string[] | null>();
   const [articlesArray, setArticlesArray] = useState<Article[]>([]);
@@ -18,10 +16,14 @@ function App() {
   const [commentsFilterOn, setCommentsFilter] = useState<boolean>(false);
   const [pointsFilterOn, setPointsFilter] = useState<boolean>(false);
 
+  function resetFilters() {
+    setCommentsFilter(false);
+    setPointsFilter(false);
+  }
+
   function commsFilter() {
     let articlesWithNum: Article[] = articlesArray.map((a) => {
       if (a.title === undefined) {
-        console.log("hey");
         return {
           ...a,
           titleWordsCount: 0,
@@ -47,14 +49,12 @@ function App() {
       .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) > 10)
       .sort((a, b) => (b?.comments ?? 0) - (a?.comments ?? 0));
     setCommentsFilter(!commentsFilterOn);
-    console.log({ filteredArray });
     setFilteredArray(articlesWithNum);
   }
 
   function pointsFilter() {
     let articlesWithNum: Article[] = articlesArray.map((a) => {
       if (a.title === undefined) {
-        console.log("hey");
         return {
           ...a,
           titleWordsCount: 0,
@@ -76,12 +76,10 @@ function App() {
       };
     });
 
-    console.log({ articlesWithNum });
     articlesWithNum = articlesWithNum
       .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) < 10)
       .sort((a, b) => (b?.points ?? 0) - (a?.points ?? 0));
     setPointsFilter(!pointsFilterOn);
-    console.log({ filteredArray });
     setFilteredArray(articlesWithNum);
   }
 
@@ -114,13 +112,34 @@ function App() {
     saveCommsFilterAction(commFilterClick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commFilterClick, pointsFilterClick]);
+
   return (
     <main className="w-4/5 m-auto">
-      <div style={{ display: "flex", justifyContent: "space-evenly" }}>
-        <button onClick={() => pointsFilter()}>Order by points</button>
-        <button onClick={() => commsFilter()}>Order by comments</button>
+      <div
+        className="mt-20 mb-10"
+        style={{ display: "flex", justifyContent: "center" }}
+      >
+        <button
+          className="btn btn-lg btn-active btn-primary mx-2"
+          onClick={() => pointsFilter()}
+        >
+          Order by points
+        </button>
+
+        <button
+          className="btn btn-lg btn-active btn-secondary mx-2"
+          onClick={() => commsFilter()}
+        >
+          Order by comments
+        </button>
+        <button
+          className="btn btn-lg btn-warning mx-2"
+          onClick={() => resetFilters()}
+        >
+          Reset filters
+        </button>
       </div>
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-3 auto-cols-2fr">
         {commentsFilterOn || pointsFilterOn
           ? filteredArray?.map((article) =>
               article.title ? (
