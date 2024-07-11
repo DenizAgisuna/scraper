@@ -1,35 +1,89 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { LoadArticles } from "./loadArticle.application";
-interface Article {
-  id: number;
-  title: string;
-  points?: number;
-  comments?: number;
-}
-function cleanHTMLString(input: string[]): string[] {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(input, "text/html");
-  const trs: string[] = [];
-  const as = doc.querySelectorAll("tr");
-  const reg =
-    / [a-z]{2,2} \w{1,} \d{1,} [a-z]{1,} [a-z]{1,} {2}\| hide \||\d{1,} [a-z]{1,} [a-z]{1,} \| hide |More/gm;
-  as.forEach((a) => {
-    trs.push(a.innerText.replace(reg, ""));
-  });
-  for (let i = 0; i < trs.length; i++) {
-    trs[i] === "" ? trs.splice(i, 1) : null;
-    trs[i] = trs[i].trim();
-    trs[i] = trs[i].replace("discuss", "");
-  }
-  return trs;
-}
+import cleanHTMLString from "./adaptHtmlString.adapter";
+import adaptArticleToObject from "./articleAdapter.adapter";
+import ArticleComponent from "./articleComponent";
+import { Article } from "./Article";
+import { savePointsFilterAction, saveCommsFilterAction } from "./storage";
+
 function App() {
-  const [articles, setArticles] = useState<string[] | null>();
+  const [commFilterClick, setCommFilterClicks] = useState<number>(0);
+  const [pointsFilterClick, setPointsFilterClick] = useState<number>(0);
+
   const [titles, setTitles] = useState<string[]>();
+  const [articles, setArticles] = useState<string[] | null>();
   const [articlesArray, setArticlesArray] = useState<Article[]>([]);
-  // const [commentsFilter, setCommentsFilter] = useState<boolean>(false)
-  // const [commentsFilter, setPointsFilter] = useState<boolean>(false)
+  const [filteredArray, setFilteredArray] = useState<Article[]>([]);
+  const [commentsFilterOn, setCommentsFilter] = useState<boolean>(false);
+  const [pointsFilterOn, setPointsFilter] = useState<boolean>(false);
+
+  function commsFilter() {
+    let articlesWithNum: Article[] = articlesArray.map((a) => {
+      if (a.title === undefined) {
+        console.log("hey");
+        return {
+          ...a,
+          titleWordsCount: 0,
+        };
+      }
+      setCommFilterClicks(commFilterClick + 1);
+      const words = a.title.split(" ");
+      const numberOfWords = words.reduce((acc, curr) => {
+        const reg = new RegExp(`\\W{${curr.length}}`, "gm");
+        if (reg.test(curr)) {
+          return acc;
+        }
+        return acc + 1;
+      }, 0);
+
+      return {
+        ...a,
+        titleWordsCount: numberOfWords,
+      };
+    });
+
+    articlesWithNum = articlesWithNum
+      .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) > 10)
+      .sort((a, b) => (b?.comments ?? 0) - (a?.comments ?? 0));
+    setCommentsFilter(!commentsFilterOn);
+    console.log({ filteredArray });
+    setFilteredArray(articlesWithNum);
+  }
+
+  function pointsFilter() {
+    let articlesWithNum: Article[] = articlesArray.map((a) => {
+      if (a.title === undefined) {
+        console.log("hey");
+        return {
+          ...a,
+          titleWordsCount: 0,
+        };
+      }
+      setPointsFilterClick(pointsFilterClick + 1);
+      const words = a.title.split(" ");
+      const numberOfWords = words.reduce((acc, curr) => {
+        const reg = new RegExp(`\\W{${curr.length}}`, "gm");
+        if (reg.test(curr)) {
+          return acc;
+        }
+        return acc + 1;
+      }, 0);
+
+      return {
+        ...a,
+        titleWordsCount: numberOfWords,
+      };
+    });
+
+    console.log({ articlesWithNum });
+    articlesWithNum = articlesWithNum
+      .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) < 10)
+      .sort((a, b) => (b?.points ?? 0) - (a?.points ?? 0));
+    setPointsFilter(!pointsFilterOn);
+    console.log({ filteredArray });
+    setFilteredArray(articlesWithNum);
+  }
 
   useEffect(() => {
     const loadArticles = new LoadArticles();
@@ -39,7 +93,6 @@ function App() {
       cleanData.forEach((e) => {
         titlesArr.push(e);
       });
-
       setTitles(cleanHTMLString(titlesArr));
       setArticles(cleanData);
     });
@@ -49,41 +102,38 @@ function App() {
     if (titles) {
       const arr = [];
       for (let i = 1; i < titles?.length; i += 2) {
-        const article: Article = {
-          id: parseInt(titles[i - 1].split("      ")[0].replace(".", ""))
-            ? parseInt(titles[i - 1].split("      ")[0].replace(".", ""))
-            : -1,
-          title: titles[i - 1].split("     ")[1],
-          points: parseInt(titles[i].split(" ")[0])
-            ? parseInt(titles[i].split(" ")[0])
-            : 0,
-          comments: parseInt(titles[i].split(" ")[2])
-            ? parseInt(titles[i].split(" ")[2])
-            : 0,
-        };
+        const article = adaptArticleToObject(titles, i);
         arr.push(article);
-        console.log(parseInt(titles[i].split(" ")[2])); //points
       }
       setArticlesArray(arr);
-      console.log(articlesArray);
     }
   }, [articles]);
-  return (
-    <>
-      {articlesArray?.map((article) =>
-        article.title ? (
-          <>
-            <h2>{`${article.id}${article.title}`}</h2>
-            <span>points: {`${article.points}`}</span>
-            <br />
-            <span>comments: {`${article.comments}`}</span>
 
-          </>
-        ) : (
-          ""
-        )
-      )}
-    </>
+  useEffect(() => {
+    savePointsFilterAction(pointsFilterClick);
+    saveCommsFilterAction(commFilterClick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commFilterClick, pointsFilterClick]);
+  return (
+    <main className="w-4/5 m-auto">
+      <div style={{ display: "flex", justifyContent: "space-evenly" }}>
+        <button onClick={() => pointsFilter()}>Order by points</button>
+        <button onClick={() => commsFilter()}>Order by comments</button>
+      </div>
+      <div className="grid grid-cols-3">
+        {commentsFilterOn || pointsFilterOn
+          ? filteredArray?.map((article) =>
+              article.title ? (
+                <ArticleComponent article={article} key={article.id} />
+              ) : null
+            )
+          : articlesArray?.map((article) =>
+              article.title ? (
+                <ArticleComponent key={article.id} article={article} />
+              ) : null
+            )}
+      </div>
+    </main>
   );
 }
 
