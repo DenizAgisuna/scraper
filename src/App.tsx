@@ -46,7 +46,7 @@ function App() {
     });
 
     articlesWithNum = articlesWithNum
-      .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) > 10)
+      .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) > 5)
       .sort((a, b) => (b?.comments ?? 0) - (a?.comments ?? 0));
     setCommentsFilter(!commentsFilterOn);
     setFilteredArray(articlesWithNum);
@@ -77,7 +77,7 @@ function App() {
     });
 
     articlesWithNum = articlesWithNum
-      .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) < 10)
+      .filter((ar) => (ar.titleWordsCount ? ar.titleWordsCount : 0) <= 5)
       .sort((a, b) => (b?.points ?? 0) - (a?.points ?? 0));
     setPointsFilter(!pointsFilterOn);
     setFilteredArray(articlesWithNum);
