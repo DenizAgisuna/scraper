@@ -1,30 +1,41 @@
-# React + TypeScript + Vite
+# Vite Web Scraper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This Vite application is a custom web scraper designed to scrape data from [Hacker News](https://news.ycombinator.com/). It utilizes CORS Anywhere, a NodeJS proxy, to add CORS headers to the proxied requests.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Prerequisites
+- Node.js (v14 or later)
+- npm (v6 or later)
 
-## Expanding the ESLint configuration
+### Installation
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/DenizAgisuna/scraper.git
+    cd scraper
+    ```
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+2. Install the dependencies:
+    ```bash
+    npm install
+    ```
 
-- Configure the top-level `parserOptions` property like this:
+### Running the Application
+1. Start the CORS Anywhere proxy server:
+    ```bash
+    node proxy.ejs
+    ```
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+2. Run the development server:
+    ```bash
+    npm run dev
+    ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Usage
+- Open your browser and navigate to `http://localhost:5173` to use the web scraper.
+
+## Notes
+- This project 's proxy uses CORS Anywhere to handle CORS issues by adding the necessary CORS headers to the proxied requests. This allows the application to successfully fetch data from `https://news.ycombinator.com/`.
+
+
