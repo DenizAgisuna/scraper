@@ -6,8 +6,8 @@ This Vite application is a custom web scraper designed to scrape data from [Hack
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or later)
-- npm (v6 or later)
+- Node.js (v18 or later)
+- npm (v9 or later)
 
 ### Installation
 1. Clone the repository:
